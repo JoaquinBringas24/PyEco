@@ -39,15 +39,16 @@ def uploadData():
 
 @regression_blueprint.post("/api/regression/compute")
 def computeRegression():
-
-    x = request.form["dependent"]
-    y = request.form["independent"]
+    y = request.form["dependent"]
+    x = request.form.getlist("independent")
+    print(y)
+    x_interest = request.form["interest"]
 
     data = pd.read_csv(f"{CUR_PATH}/cache/datasets/data.csv")
 
     print(request.files)
 
-    results = smf.ols(f"{y} ~ {x}", data=data).fit()
+    results = smf.ols(f"{y} ~ {"+".join(x)}", data=data).fit()
 
     coeffs = list(results.params)
 
@@ -57,15 +58,18 @@ def computeRegression():
 
     source = ColumnDataSource(data)
 
-    p.scatter(x=x, y=y, size=5, source=source)
+    p.scatter(x=x_interest, y=y, size=5, source=source)
     
-    y_regress = [coeffs[0] + coeffs[1] * i for i in data[x]]
+    ## COEFFS ARE NOT DYNAMICLY UPDATEEEEEEED 
+    y_regress = [coeffs[0] + coeffs[1] * i for i in data[x_interest]]
 
-    p.line(x=data[x], y=y_regress, color="red", legend_label="Regression", name="regression", line_width=2)
+    p.line(x=data[x_interest], y=y_regress, color="red", legend_label="Regression", name="regression", line_width=2)
 
     print(CUR_PATH)
 
     return render_template("regression.html",
-                            data=coeffs,
                             graph=file_html(p, CDN, title=y),
-                            variables=list(data.columns))
+                            variables=list(data.columns),
+                            summary_coeffs=str(results.summary().tables[1].as_html()),
+                            summary_ols=str(results.summary().tables[0].as_html()),
+                            summary_reg=str(results.summary().tables[2].as_html()))

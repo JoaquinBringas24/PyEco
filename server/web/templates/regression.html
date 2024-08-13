@@ -1,8 +1,8 @@
 {% extends "base.html" %} {% block content %}
 <div class="row">
-  <div class="col-4">
+  <div class="col-3">
     <div class="custom-file m-2">
-      {% if not data %}
+      {% if not summary_coeffs %}
       <form
         action="/api/regression/upload"
         method="POST"
@@ -19,29 +19,39 @@
       {% endif %}
     </div>
 
-    {% if data %}
+    {% if variables %}
 
     <form
       enctype="multipart/form-data"
       action="/api/regression/compute"
       class="d-flex flex-column m-2"
       method="POST"
+      id="regression-form"
     >
-      <label class="m-2">Dependent Variable</label>
+      <label style="font-weight: bold" class="m-2">Dependent Variable</label>
       <select name="dependent">
         {% for variable in variables %}
         <option>{{variable}}</option>
         {% endfor %}
       </select>
-      <label class="m-2">Independent Variables</label>
-      <select name="independent">
+      <label style="font-weight: bold" class="m-2">Independent Variables</label>
+
+      {% for variable in variables %}
+      <label for="{{variable}}"
+        ><input
+          type="checkbox"
+          name="independent"
+          value="{{variable}}"
+        />{{variable}}</label
+      >
+      {% endfor %}
+      <label style="font-weight: bold">Variable of Interest</label>
+      <select name="interest">
         {% for variable in variables %}
         <option>{{variable}}</option>
-
         {% endfor %}
       </select>
-
-      <button class="btn btn-primary">Run</button>
+      <button type="submit" class="btn btn-primary">Run</button>
     </form>
     <button onclick="location.href = '/regression'" class="btn btn-danger">
       Reset
@@ -49,9 +59,19 @@
 
     {% endif %}
   </div>
-  <div class="col-8">
-    <div id="container" style="max-width: 400px">{{data | safe}}</div>
+  <div class="col-5">
     <div>{{graph | safe}}</div>
+  </div>
+  <div class="col-4">
+    {{summary_ols | safe}}
+    <hr />
+    {{summary_coeffs | safe}}
+    <hr />
+    {{summary_reg | safe }}
+
+    <script>
+      $(".simpletable").removeClass("simpletable").addClass("table");
+    </script>
   </div>
 
   <script>
