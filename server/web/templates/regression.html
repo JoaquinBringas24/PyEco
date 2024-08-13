@@ -1,0 +1,68 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="col-4">
+    <div class="custom-file m-2">
+      {% if not data %}
+      <form
+        action="/api/regression/upload"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <input
+          type="file"
+          class="custom-file-input m-2"
+          id="inputGroupFile01"
+          name="data"
+        />
+        <button type="submit" class="btn btn-primary">Go</button>
+      </form>
+      {% endif %}
+    </div>
+
+    {% if data %}
+
+    <form
+      enctype="multipart/form-data"
+      action="/api/regression/compute"
+      class="d-flex flex-column m-2"
+      method="POST"
+    >
+      <label class="m-2">Dependent Variable</label>
+      <select name="dependent">
+        {% for variable in variables %}
+        <option>{{variable}}</option>
+        {% endfor %}
+      </select>
+      <label class="m-2">Independent Variables</label>
+      <select name="independent">
+        {% for variable in variables %}
+        <option>{{variable}}</option>
+
+        {% endfor %}
+      </select>
+
+      <button class="btn btn-primary">Run</button>
+    </form>
+    <button onclick="location.href = '/regression'" class="btn btn-danger">
+      Reset
+    </button>
+
+    {% endif %}
+  </div>
+  <div class="col-8">
+    <div id="container" style="max-width: 400px">{{data | safe}}</div>
+    <div>{{graph | safe}}</div>
+  </div>
+
+  <script>
+    new DataTable("#myTable", {
+      fixedColumns: true,
+      paging: true,
+      scrollCollapse: true,
+      scrollX: 1000,
+      scrollY: 400,
+    });
+  </script>
+</div>
+
+{% endblock %}
